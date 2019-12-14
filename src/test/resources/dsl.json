@@ -1,0 +1,44 @@
+{
+  "transforms": [
+    {
+      "method": "setOrderId",
+      "class": {
+        "name": "java.lang.Integer",
+        "template": "{0}"
+      }
+    },
+    {
+      "method": "setOrderDate",
+      "class": {
+        "name": "java.util.Date",
+        "dateFormat": "yyyy-MM-dd",
+        "template": "{1}-{2}-{3}"
+      }
+    },
+    {
+      "method": "setProductId",
+      "class": {
+        "name": "java.lang.String",
+        "template": "{4}"
+      }
+    },
+    {
+      "method": "setProductName",
+      "class": {
+        "name": "java.lang.String",
+        "case": "proper",
+        "template": "{5}"
+      }
+    },
+    {
+      "method": "setQuantity",
+      "class": {
+        "name": "java.math.BigDecimal",
+        "template": "{6}",
+        "filters": [
+          ","
+        ]
+      }
+    }
+  ]
+}
