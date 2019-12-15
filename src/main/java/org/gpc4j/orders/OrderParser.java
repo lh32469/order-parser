@@ -56,7 +56,16 @@ public class OrderParser {
    * @param iStream Containing JSON Rules
    */
   public OrderParser(InputStream iStream) throws IOException {
-    this.transformRules = new ObjectMapper().readTree(iStream);
+    this(new InputStreamReader(iStream));
+  }
+
+  /**
+   * Create OrderParser using the transform rules provided.
+   *
+   * @param reader Containing JSON Rules
+   */
+  public OrderParser(final Reader reader) throws IOException {
+    this.transformRules = new ObjectMapper().readTree(reader);
   }
 
 
@@ -151,6 +160,9 @@ public class OrderParser {
 
       }
 
+    } catch (NoSuchMethodException ex) {
+      LOG.error("Error with Transform Rules file: " + ex.toString());
+      throw new IllegalArgumentException(ex);
     } catch (ReflectiveOperationException ex) {
       LOG.error(ex.toString());
       LOG.error("Error with " + csvRecord + "; " + ex.getCause());

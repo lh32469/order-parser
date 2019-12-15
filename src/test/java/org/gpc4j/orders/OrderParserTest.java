@@ -1,11 +1,16 @@
 package org.gpc4j.orders;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.gpc4j.orders.model.Order;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,17 +23,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 public class OrderParserTest {
 
   OrderParser orderParser;
 
+  @Rule
+  public TestName testName = new TestName();
+
   Logger LOG = LoggerFactory.getLogger(OrderParserTest.class);
 
 
   @Before
   public void setUp() throws Exception {
+    LOG.info("++++++  " + testName.getMethodName() + "  ++++++");
 
     InputStream iStream =
         getClass().getClassLoader().getResourceAsStream("dsl.json");
@@ -37,6 +47,11 @@ public class OrderParserTest {
     orderParser = new OrderParser(iStream);
   }
 
+
+  @After
+  public void tearDown() {
+    LOG.info("------  " + testName.getMethodName() + "  ------");
+  }
 
   /**
    * Test ability to parse an InputStream of CSV Data and InputStream
@@ -171,6 +186,83 @@ public class OrderParserTest {
     verify(orderParser.LOG).error(contains("Error with CSVRecord"));
     verify(orderParser.LOG).error(contains("out of bounds for length"));
     verify(orderParser.LOG).error(contains("ArrayIndexOutOfBoundsException: "));
+  }
+
+
+  /**
+   * Test that Transform Rules file containing wrong method name logs error
+   * and throws IllegalArgumentException.
+   */
+  @Test
+  public void wrongMethodName() throws IOException {
+    final String csvString = "1001,2019,1,1,P-10001,Arugola,\"5,250.50\",Lorem,Ipsum,\n";
+    CSVParser parser = new CSVParser(new StringReader(csvString), CSVFormat.DEFAULT);
+    CSVRecord record = parser.getRecords().get(0);
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode rules = mapper.readTree(
+        "{\n" +
+            "  \"transforms\": [\n" +
+            "    {\n" +
+            "      \"method\": \"bogusMethod\",\n" +
+            "      \"class\": {\n" +
+            "        \"name\": \"java.lang.Integer\",\n" +
+            "        \"template\": \"{0}\"\n" +
+            "      }\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}");
+
+    orderParser = new OrderParser(new StringReader(rules.toString()));
+    orderParser.LOG = mock(Logger.class);
+
+    try {
+      orderParser.process.apply(record);
+      fail("Expected IllegalArgumentException");
+    } catch (IllegalArgumentException ex) {
+    }
+
+    verify(orderParser.LOG).error(contains("NoSuchMethodException"));
+    verify(orderParser.LOG).error(contains("Error with Transform Rules file"));
+    verify(orderParser.LOG).error(contains("bogusMethod"));
+  }
+
+  /**
+   * Test that Transform Rules file containing wrong method class for method logs error
+   * and throws IllegalArgumentException.
+   */
+  @Test
+  public void wrongMethodSignature() throws IOException {
+    final String csvString = "1001,2019,1,1,P-10001,Arugola,\"5,250.50\",Lorem,Ipsum,\n";
+    CSVParser parser = new CSVParser(new StringReader(csvString), CSVFormat.DEFAULT);
+    CSVRecord record = parser.getRecords().get(0);
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode rules = mapper.readTree(
+        "{\n" +
+            "  \"transforms\": [\n" +
+            "    {\n" +
+            "      \"method\": \"setOrderId\",\n" +
+            "      \"class\": {\n" +
+            "        \"name\": \"java.lang.String\",\n" +
+            "        \"template\": \"{0}\"\n" +
+            "      }\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}");
+
+    orderParser = new OrderParser(new StringReader(rules.toString()));
+    orderParser.LOG = mock(Logger.class);
+
+    try {
+      orderParser.process.apply(record);
+      fail("Expected IllegalArgumentException");
+    } catch (IllegalArgumentException ex) {
+    }
+
+    verify(orderParser.LOG).error(contains("NoSuchMethodException"));
+    verify(orderParser.LOG).error(contains("Error with Transform Rules file"));
+    verify(orderParser.LOG).error(contains("setOrderId(java.lang.String)"));
   }
 
 
