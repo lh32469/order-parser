@@ -84,7 +84,7 @@ as part of the "class" definition for Strings
 
 #### Usage
 
-Build:
+Build, Test and Install:
 
     $ mvn clean install
 
