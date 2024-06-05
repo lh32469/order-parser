@@ -70,7 +70,7 @@ public class OrderParser {
 
 
   /**
-   * Parse the CSF file name provided and return a Stream of Orders.
+   * Parse the CSV file name provided and return a Stream of Orders.
    *
    * @throws IOException
    */
@@ -79,7 +79,7 @@ public class OrderParser {
   }
 
   /**
-   * Parse the CSF File provided and return a Stream of Orders.
+   * Parse the CSV File provided and return a Stream of Orders.
    *
    * @throws IOException
    */
@@ -88,7 +88,7 @@ public class OrderParser {
   }
 
   /**
-   * Parse the CSF InputStream provided and return a Stream of Orders.
+   * Parse the CSV InputStream provided and return a Stream of Orders.
    *
    * @throws IOException
    */
@@ -97,7 +97,7 @@ public class OrderParser {
   }
 
   /**
-   * Parse the CSF Reader provided and return a Stream of Orders.
+   * Parse the CSV Reader provided and return a Stream of Orders.
    *
    * @throws IOException
    */
